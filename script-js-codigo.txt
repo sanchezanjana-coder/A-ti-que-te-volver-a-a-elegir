@@ -1,0 +1,240 @@
+"use strict";
+
+// Se usan los nombres EXACTOS de los siete originales entregados.
+const IMAGE_WIDTH = 1366;
+const IMAGE_HEIGHT = 818;
+const SONG = "./musica/cancion.mp3"; // Archivo opcional NO incluido.
+const pages = [
+  { file: "1(1).png", alt: "Portada con corazón rosa, F más A y dedicatoria para los seis meses.",
+    transcript: "F más A. Para la persona que más amo. Tengo algo para ti, por este medio año contigo... Siguiente." },
+  { file: "2(1).png", alt: "Página con flores, un personaje blanco y una pregunta: ¿Me amas? Botones Sí y No.",
+    transcript: "¡Hey! ¿Me amas? Es necesario antes de enseñarte lo preparado. Sí. No." },
+  { file: "3(1).png", alt: "Introducción a la carta, decorada con flores y un sobre.",
+    transcript: "Sé que no te gusta leer, pero a mí me encanta hablar, y... eso hace que escriba mucho. Merece la pena leerlo. Te amo. Siguiente." },
+  { file: "4(1).png", alt: "Carta original sobre papel en dos columnas, titulada A ti, que volvería a elegir.",
+    transcript: "A ti, que volvería a elegir. No sé qué extraña voluntad del cielo cruzó tu camino con el mío, ni qué secreto guardaba el universo para encontrarte entre tantos destinos. Solo sé que llegaste a mi vida sin prometerme estrellas ni eternidades, y que, sin darme cuenta, poco a poco, te volviste parte de mis verdades. Porque quererte no es tan solo verte y sentir que el corazón se me ilumina; es encontrar belleza en lo pequeño y sentirte presente aun en la distancia. Y yo te elijo, amor, en lo sencillo, cuando no hay nada extraordinario que ofrecer; no porque sepa todo de la vida, sino porque contigo la quiero recorrer. No te prometo un mundo sin tormentas, ni un tiempo que no cambie nuestra historia; te ofrezco mis ganas de seguir contigo y de guardar a tu lado cada memoria. Hoy son seis meses, Javi, y me parece que el calendario apenas los explica; pues hay instantes que duran un segundo y dejan en el alma una huella infinita. Y si algún día me preguntara el destino qué camino elegiría entre los míos, no pediría conocer lo que nos espera: volvería a encontrarte, volvería a enamorarme, y aun sin saber el final de nuestra historia, volvería a elegirte." },
+  { file: "5(1).png", alt: "Texto que introduce el poema El amor eterno de Gustavo Adolfo.",
+    transcript: "Y, ahora, después de leer, te toca leer El amor eterno de Gustavo Adolfo. ¿Lo conoces? Yo no mucho, pero escribe bien y sabe cuáles palabras te dedico. Siguiente." },
+  { file: "6(1).png", alt: "Poema sobre pergamino con flores secas y una pluma.",
+    transcript: "Podrá nublarse el sol eternamente; podrá secarse en un instante el mar; podrá romperse el eje de la tierra como un débil cristal. ¡Todo sucederá! Podrá la muerte cubrirme con su fúnebre crespón; pero jamás en mí podrá apagarse la llama de tu amor." },
+  { file: "7(1).png", alt: "Álbum original de cuatro fotografías familiares y de pareja sobre una mesa de madera.",
+    transcript: "Álbum de recuerdos con cuatro fotografías originales. Para volver al comienzo, pulsa Página 1 en la navegación superior o la tecla Inicio." }
+];
+
+// Rectángulos medidos sobre los PNG nativos de 1366 x 818 px.
+// Estos son los elementos VISIBLES en los diseños originales. No se dibujan de nuevo.
+const hotspots = {
+  1: [{ name: "Siguiente", x: 479, y: 556, width: 347, height: 79, action: "next" }],
+  2: [
+    { name: "Sí", x: 493, y: 560, width: 119, height: 81, action: "next" },
+    { name: "No", x: 670, y: 560, width: 119, height: 81, action: "no" }
+  ],
+  3: [{ name: "Siguiente", x: 466, y: 614, width: 348, height: 80, action: "next" }],
+  5: [{ name: "Siguiente", x: 466, y: 614, width: 348, height: 80, action: "next" }]
+};
+
+const viewport = document.getElementById("viewport");
+const stage = document.getElementById("page");
+const image = document.getElementById("canvaImage");
+const hotspotLayer = document.getElementById("pageHotspots");
+const navButtons = [...document.querySelectorAll("[data-go]")];
+const status = document.getElementById("pageStatus");
+const transcript = document.getElementById("transcript");
+const musicToggle = document.getElementById("musicToggle");
+const player = document.getElementById("player");
+const toast = document.getElementById("toast");
+
+let currentPage = 1;
+let zoom = 1;
+let toastTimeout;
+let touchStart = null;
+let previousTap = null;
+let lastTouchZoomAt = 0;
+
+function announce(message, duration = 3200) {
+  window.clearTimeout(toastTimeout);
+  toast.textContent = message;
+  toast.hidden = false;
+  toastTimeout = window.setTimeout(() => { toast.hidden = true; }, duration);
+}
+
+function fitWidth() {
+  // Escala "contain": no se recorta ni deforma ninguna página.
+  return Math.min(viewport.clientWidth, viewport.clientHeight * IMAGE_WIDTH / IMAGE_HEIGHT);
+}
+
+function applyZoom() {
+  stage.style.setProperty("--stage-width", `${fitWidth() * zoom}px`);
+}
+
+function changeZoom(newZoom, x = viewport.getBoundingClientRect().left + viewport.clientWidth / 2,
+                   y = viewport.getBoundingClientRect().top + viewport.clientHeight / 2) {
+  const desired = Math.max(1, Math.min(4, newZoom));
+  if (desired === zoom) return;
+  const oldRect = stage.getBoundingClientRect();
+  const anchorX = Math.max(0, Math.min(1, (x - oldRect.left) / oldRect.width));
+  const anchorY = Math.max(0, Math.min(1, (y - oldRect.top) / oldRect.height));
+  zoom = desired;
+  applyZoom();
+  // Mantener el punto tocado en el mismo lugar del área visible tras ampliar.
+  const newRect = stage.getBoundingClientRect();
+  const viewportRect = viewport.getBoundingClientRect();
+  const stageLeftInScroll = newRect.left - viewportRect.left + viewport.scrollLeft;
+  const stageTopInScroll = newRect.top - viewportRect.top + viewport.scrollTop;
+  viewport.scrollLeft = stageLeftInScroll + anchorX * newRect.width - (x - viewportRect.left);
+  viewport.scrollTop = stageTopInScroll + anchorY * newRect.height - (y - viewportRect.top);
+}
+
+function readPageNumber() {
+  const match = /^#page-([1-7])$/.exec(window.location.hash);
+  return match ? Number(match[1]) : 1;
+}
+
+function renderPage(pageNumber) {
+  currentPage = pageNumber;
+  zoom = 1;
+  applyZoom();
+  viewport.scrollLeft = 0;
+  viewport.scrollTop = 0;
+
+  const data = pages[pageNumber - 1];
+  // src es relativo: funciona igual en local y bajo /nombre-del-repositorio/.
+  image.src = `./imagenes/${data.file}`;
+  image.alt = data.alt;
+  transcript.textContent = data.transcript;
+  status.textContent = `Página ${pageNumber} de ${pages.length}.`;
+
+  navButtons.forEach(button => {
+    if (Number(button.dataset.go) === pageNumber) button.setAttribute("aria-current", "page");
+    else button.removeAttribute("aria-current");
+  });
+
+  hotspotLayer.replaceChildren();
+  for (const area of hotspots[pageNumber] || []) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "hotspot cta-hotspot";
+    button.setAttribute("aria-label", area.name);
+    button.dataset.action = area.action;
+    button.style.setProperty("--x", `${area.x / IMAGE_WIDTH * 100}%`);
+    button.style.setProperty("--y", `${area.y / IMAGE_HEIGHT * 100}%`);
+    button.style.setProperty("--w", `${area.width / IMAGE_WIDTH * 100}%`);
+    button.style.setProperty("--h", `${area.height / IMAGE_HEIGHT * 100}%`);
+    hotspotLayer.appendChild(button);
+  }
+}
+
+function goTo(pageNumber) {
+  if (pageNumber < 1 || pageNumber > pages.length) return;
+  const destination = `#page-${pageNumber}`;
+  if (window.location.hash !== destination) window.location.hash = destination;
+  else renderPage(pageNumber);
+}
+
+function nextPage() { goTo(Math.min(pages.length, currentPage + 1)); }
+function previousPage() { goTo(Math.max(1, currentPage - 1)); }
+
+// Delegación: todos los botones pulsables tienen una acción.
+navButtons.forEach(button => {
+  button.addEventListener("click", () => goTo(Number(button.dataset.go)));
+});
+hotspotLayer.addEventListener("click", event => {
+  const button = event.target.closest("button[data-action]");
+  if (!button) return;
+  if (button.dataset.action === "next") nextPage();
+  if (button.dataset.action === "no") {
+    // Mover el botón de forma visible requeriría modificar el arte original.
+    // En vez de desalinear la zona transparente, ofrecemos una respuesta juguetona.
+    announce("¿Seguro? 🤭 Puedes volver a intentarlo con «Sí» 💗");
+  }
+});
+
+window.addEventListener("hashchange", () => renderPage(readPageNumber()));
+window.addEventListener("resize", applyZoom);
+
+// Deslizar en móviles funciona cuando está ajustada la página; ampliada, el gesto desplaza.
+viewport.addEventListener("touchstart", event => {
+  if (event.touches.length !== 1 || event.target.closest("button")) {
+    touchStart = null;
+    return;
+  }
+  const touch = event.touches[0];
+  touchStart = { x: touch.clientX, y: touch.clientY };
+}, { passive: true });
+viewport.addEventListener("touchend", event => {
+  if (!touchStart || event.changedTouches.length !== 1) return;
+  const touch = event.changedTouches[0];
+  const dx = touch.clientX - touchStart.x;
+  const dy = touch.clientY - touchStart.y;
+  touchStart = null;
+  if (zoom !== 1) return;
+  if (Math.abs(dx) > 65 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+    previousTap = null;
+    if (dx < 0) nextPage();
+    else previousPage();
+  }
+}, { passive: true });
+viewport.addEventListener("touchcancel", () => { touchStart = null; }, { passive: true });
+
+// Doble toque/doble clic sobre el dibujo, NO sobre los botones, alterna ajuste y zoom.
+image.addEventListener("dblclick", event => {
+  if (Date.now() - lastTouchZoomAt < 650) return; // Evita un segundo zoom por el dblclick sintético en móviles.
+  event.preventDefault();
+  changeZoom(zoom === 1 ? 2.5 : 1, event.clientX, event.clientY);
+});
+image.addEventListener("touchend", event => {
+  if (event.changedTouches.length !== 1 || event.touches.length) return;
+  const touch = event.changedTouches[0];
+  const now = Date.now();
+  if (previousTap && now - previousTap.at < 340 &&
+      Math.hypot(touch.clientX - previousTap.x, touch.clientY - previousTap.y) < 35) {
+    event.preventDefault();
+    lastTouchZoomAt = now;
+    changeZoom(zoom === 1 ? 2.5 : 1, touch.clientX, touch.clientY);
+    previousTap = null;
+  } else previousTap = { at: now, x: touch.clientX, y: touch.clientY };
+}, { passive: false });
+
+async function toggleMusic() {
+  if (!player.paused) {
+    player.pause();
+    musicToggle.setAttribute("aria-pressed", "false");
+    musicToggle.setAttribute("aria-label", "Reproducir música");
+    return;
+  }
+  if (!player.getAttribute("src")) player.setAttribute("src", SONG);
+  try {
+    await player.play(); // Solo desde una acción del usuario, nunca automáticamente.
+    musicToggle.setAttribute("aria-pressed", "true");
+    musicToggle.setAttribute("aria-label", "Pausar música");
+  } catch {
+    musicToggle.setAttribute("aria-pressed", "false");
+    announce("No hay canción todavía. Añade tu MP3 en musica/cancion.mp3 🎵", 5000);
+  }
+}
+musicToggle.addEventListener("click", toggleMusic);
+player.addEventListener("ended", () => musicToggle.setAttribute("aria-pressed", "false"));
+player.addEventListener("pause", () => {
+  musicToggle.setAttribute("aria-pressed", "false");
+  musicToggle.setAttribute("aria-label", "Reproducir música");
+});
+document.getElementById("zoomInA11y").addEventListener("click", () => changeZoom(zoom + 1));
+document.getElementById("zoomOutA11y").addEventListener("click", () => changeZoom(zoom - 1));
+
+window.addEventListener("keydown", event => {
+  if (event.altKey || event.ctrlKey || event.metaKey ||
+      ["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName)) return;
+  if (event.key === "ArrowRight" || event.key === "PageDown") { event.preventDefault(); nextPage(); }
+  else if (event.key === "ArrowLeft" || event.key === "PageUp") { event.preventDefault(); previousPage(); }
+  else if (event.key === "Home") { event.preventDefault(); goTo(1); }
+  else if (event.key === "End") { event.preventDefault(); goTo(pages.length); }
+  else if (["+", "="].includes(event.key)) { event.preventDefault(); changeZoom(zoom + 1); }
+  else if (event.key === "-") { event.preventDefault(); changeZoom(zoom - 1); }
+  else if (event.key === "0" || event.key === "Escape") { changeZoom(1); }
+  else if (event.key.toLowerCase() === "m") { toggleMusic(); }
+});
+
+image.addEventListener("error", () => {
+  announce(`No se encuentra la imagen ${pages[currentPage - 1].file}. Revisa la carpeta imagenes/.`, 7000);
+});
+renderPage(readPageNumber());
