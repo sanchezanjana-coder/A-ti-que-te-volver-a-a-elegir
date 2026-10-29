@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fff6f8">
+  <meta name="description" content="Seis meses de nosotros. Una historia para Javi.">
+  <title>A ti, que volvería a elegir ♡</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <header class="sitebar">
+    <button id="homeButton" class="brand" type="button" aria-label="Volver al principio">J + A <span>♡</span></button>
+    <div class="sitebar-actions">
+      <span class="progress-label" id="progressLabel" aria-live="polite"></span>
+      <button type="button" id="musicButton" class="music-btn" aria-pressed="false" title="Pon tu canción en musica/cancion.mp3">♫ <span id="musicText">Música</span></button>
+    </div>
+  </header>
+  <main id="screens">
+    <section class="screen is-active" data-screen="0" aria-label="Portada">
+      <div class="hero-layout">
+        <div class="artwork"><img src="imagenes/1.png" alt="Diseño original de Canva: J más A sobre un corazón rosa; para la persona que más amo" draggable="false"><button class="image-hotspot" style="--x:35%;--y:68%;--w:25%;--h:12%" data-next aria-label="Siguiente, como en el diseño de Canva"></button></div>
+        <div class="hero-sidebar">
+          <p class="eyebrow">Para Javi, con todo mi amor</p>
+          <h1>Seis meses<br>de nosotros <span>♡</span></h1>
+          <p class="date">06 · 05 · 2026</p>
+          <div class="photo-slot photo-slot-small" data-photo="portada"><span class="photo-icon">♡</span><span>Una foto de nosotros dos</span><small>Colócala en imagenes/foto-portada.jpg</small></div>
+          <button type="button" class="primary-btn" data-next>Comenzar <span aria-hidden="true">→</span></button>
+        </div>
+      </div>
+    </section>
+    <section class="screen" data-screen="1" aria-label="Cuestionario">
+      <div class="hero-layout">
+        <div class="artwork"><img src="imagenes/2.png" alt="Página original de Canva con la pregunta ¿Me amas?, dibujos, ramo de flores y pegatinas" draggable="false"></div>
+        <div class="hero-sidebar quiz-sidebar">
+          <p class="eyebrow">Antes de seguir...</p>
+          <h2>¿Han sido los mejores <em>SEIS</em> meses de tu vida?</h2>
+          <div class="quiz-area" id="quizArea">
+            <button type="button" id="yesButton" class="primary-btn">Sí, sin duda ♡</button>
+            <button type="button" id="noButton" class="secondary-btn">No</button>
+          </div>
+          <p class="gentle-note" id="quizNote" aria-live="polite">Elige con el corazón ♡</p>
+        </div>
+      </div>
+    </section>
+    <section class="screen" data-screen="2" aria-label="Mi carta">
+      <div class="artwork artwork-centered"><img src="imagenes/3.png" alt="Página original de Canva: sé que no te gusta leer, pero a mí me encanta hablar y escribir mucho; te amo" draggable="false"><button class="image-hotspot" style="--x:34%;--y:75%;--w:26%;--h:12%" data-next aria-label="Siguiente, como en el diseño de Canva"></button></div>
+    </section>
+    <section class="screen" data-screen="3" aria-label="A ti, que volvería a elegir">
+      <div class="artwork artwork-centered"><img src="imagenes/4.png" alt="Poema original A ti, que volvería a elegir, escrito en dos hojas de papel antiguo" draggable="false"></div>
+    </section>
+    <section class="screen" data-screen="4" aria-label="Una lectura más">
+      <div class="artwork artwork-centered"><img src="imagenes/5.png" alt="Página original de Canva que introduce el poema El amor eterno de Gustavo Adolfo Bécquer" draggable="false"><button class="image-hotspot" style="--x:34%;--y:75%;--w:26%;--h:12%" data-next aria-label="Siguiente, como en el diseño de Canva"></button></div>
+    </section>
+    <section class="screen" data-screen="5" aria-label="Amor eterno">
+      <div class="artwork artwork-centered"><img src="imagenes/6.png" alt="Poema Amor eterno de Gustavo Adolfo Bécquer, sobre papel antiguo, con flores y pluma estilográfica" draggable="false"></div>
+    </section>
+    <section class="screen" data-screen="6" aria-label="Nuestro álbum original">
+      <div class="artwork artwork-centered"><img src="imagenes/7.png" alt="Álbum original de Canva con fotografías personales en marcos Polaroid sobre una mesa" draggable="false"></div>
+    </section>
+    <section class="screen" data-screen="7" aria-label="Más recuerdos">
+      <div class="paper-page album-page">
+        <p class="eyebrow">Nuestro pequeño álbum</p>
+        <h2>Momentos que quiero guardar ♡</h2>
+        <p class="album-intro">Aquí caben todas las pequeñas historias que seguimos escribiendo.</p>
+        <div class="album-grid">
+          <figure class="polaroid"><div class="photo-slot" data-photo="1"><span>♡</span><small>imagenes/foto-1.jpg</small></div><figcaption>Un día contigo</figcaption></figure>
+          <figure class="polaroid"><div class="photo-slot" data-photo="2"><span>♡</span><small>imagenes/foto-2.jpg</small></div><figcaption>Una de mis favoritas</figcaption></figure>
+          <figure class="polaroid"><div class="photo-slot" data-photo="3"><span>♡</span><small>imagenes/foto-3.jpg</small></div><figcaption>Nosotros, siempre</figcaption></figure>
+          <figure class="polaroid"><div class="photo-slot" data-photo="4"><span>♡</span><small>imagenes/foto-4.jpg</small></div><figcaption>Otro recuerdo más</figcaption></figure>
+        </div>
+      </div>
+    </section>
+    <section class="screen" data-screen="8" aria-label="Mi dedicatoria para Javi">
+      <div class="paper-page dedication-page">
+        <p class="eyebrow">Una carta para ti</p>
+        <h2>Querido Javi,</h2>
+        <p>Hoy celebramos seis meses de nosotros, de momentos pequeños que se han vuelto enormes solo porque los he vivido contigo.</p>
+        <p>Y aunque todavía nos quedan muchísimas páginas por escribir, hay algo que ya sé: <strong>si volviera al principio, volvería a elegirte.</strong></p>
+        <p class="dedication-hint">Esta dedicatoria es editable en <code>index.html</code>, para que puedas escribir aquí tus propias palabras.</p>
+        <p class="signature">Con todo mi amor, ♡</p>
+      </div>
+    </section>
+    <section class="screen" data-screen="9" aria-label="Hasta la próxima página">
+      <div class="paper-page final-page">
+        <p class="eyebrow">Y esto solo es el principio</p>
+        <h2>En esta vida y en todas,<br>volvería a elegirte. ♡</h2>
+        <div class="photo-slot final-photo" data-photo="final"><span>♡</span><small>imagenes/foto-final.jpg</small></div>
+        <p>Felices seis meses, Javi.</p>
+        <button class="primary-btn" type="button" data-go="0">Volver al principio ↺</button>
+      </div>
+    </section>
+  </main>
+  <nav class="bottom-nav" aria-label="Navegación de la historia">
+    <button id="prevButton" class="nav-btn" type="button">← Anterior</button>
+    <div class="page-dots" id="pageDots" aria-label="Páginas"></div>
+    <button id="nextButton" class="nav-btn" type="button">Siguiente →</button>
+  </nav>
+  <dialog id="zoomDialog" class="zoom-dialog" aria-label="Imagen ampliada"><button type="button" id="closeZoom" class="close-zoom">Cerrar ✕</button><div class="zoom-scroller"><img id="zoomImage" alt="Versión ampliada de la imagen original"></div></dialog>
+  <audio id="musicAudio" preload="none" loop src="musica/cancion.mp3"></audio>
+</body>
+</html>
